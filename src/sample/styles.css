@@ -3,9 +3,10 @@
 }
 
 .menubtn {
-    -fx-min-width: 200px;
+    -fx-min-width: 250px;
     -fx-text-fill: white;
     -fx-background-color: #2196F3;
     -fx-padding: 20px 25px;
     -fx-cursor: hand;
+    -fx-font-size: 20px;
 }

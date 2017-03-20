@@ -5,10 +5,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
-import javafx.geometry.Pos;
+import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -37,31 +34,44 @@ public class Main extends Application {
         // **********************
         // Start Screen
         // **********************
+        GridPane layout1 = new GridPane();
+        layout1.setPadding(new Insets(10, 10, 50, 10));
+        layout1.setVgap(10);
+        layout1.setHgap(100);
+
+        ColumnConstraints columnConstraints = new ColumnConstraints();
+        columnConstraints.setFillWidth(true);
+        columnConstraints.setHgrow(Priority.ALWAYS);
+        layout1.getColumnConstraints().add(columnConstraints);
+
+        RowConstraints rowConstraints = new RowConstraints();
+        rowConstraints.setFillHeight(true);
+        rowConstraints.setVgrow(Priority.ALWAYS);
+        layout1.getRowConstraints().add(rowConstraints);
+
         Label mainTitle = new Label();
         mainTitle.getStyleClass().add("main-title");
         mainTitle.setText("Fitt's Law Experiment");
+        layout1.setConstraints(mainTitle, 0, 0);
 
         Button startButton = new Button("Start Experiment");
         startButton.getStyleClass().add("menubtn");
+        layout1.setConstraints(startButton, 0, 1);
+
         Button exitButton = new Button("Exit Program");
         exitButton.getStyleClass().add("menubtn");
+        layout1.setConstraints(exitButton, 0, 2);
 
 
-        GridPane layout1 = new GridPane();
-
+        // Horizontal and Vertical Alignment of items
         layout1.setHalignment(mainTitle, HPos.CENTER);
         layout1.setHalignment(startButton, HPos.CENTER);
         layout1.setHalignment(exitButton, HPos.CENTER);
 
-        int menuheight = 180;
+        layout1.setValignment(mainTitle, VPos.CENTER);
+        layout1.setValignment(startButton, VPos.CENTER);
+        layout1.setValignment(exitButton, VPos.CENTER);
 
-        layout1.getColumnConstraints().add(new ColumnConstraints(width));
-        layout1.getRowConstraints().add(new RowConstraints(menuheight));
-        layout1.getRowConstraints().add(new RowConstraints(menuheight));
-        layout1.getRowConstraints().add(new RowConstraints(menuheight));
-        layout1.setConstraints(mainTitle, 0, 0);
-        layout1.setConstraints(startButton, 0, 1);
-        layout1.setConstraints(exitButton, 0, 2);
         layout1.getChildren().addAll(mainTitle, startButton, exitButton);
 
         Scene startScene = new Scene(layout1, width, height);
@@ -94,6 +104,8 @@ public class Main extends Application {
         //layout3.getChildren().add();
 
         Scene graphScene = new Scene(layout3, width, height);
+
+
         // **********************
         // Event Handlers
         // **********************
