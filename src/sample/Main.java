@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.EventHandler;
 import javafx.geometry.*;
 import javafx.scene.Scene;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -14,21 +15,25 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Main extends Application {
     final static int width = 1000;
     final static int height = 800;
-    final static double radius = 80.0f;
+    final static double radius = 50.0f;
 
+    int iterations = 10;
     int count = 0;
 
     String css = this.getClass().getResource("/sample/styles.css").toExternalForm();
 
-    ArrayList<Double> time = new ArrayList();
+    ArrayList<Double> times = new ArrayList();
+    ArrayList<Double> dists = new ArrayList();
 
     double startTime;
     double endTime;
@@ -58,65 +63,87 @@ public class Main extends Application {
         Label mainTitle = new Label();
         mainTitle.getStyleClass().add("main-title");
         mainTitle.setText("Fitt's Law Experiment");
-        layout1.setConstraints(mainTitle, 0, 0);
+        GridPane.setConstraints(mainTitle, 0, 0);
+        GridPane.setHalignment(mainTitle, HPos.CENTER);
+        GridPane.setValignment(mainTitle, VPos.CENTER);
 
         Button startButton = new Button("Start Experiment");
         startButton.getStyleClass().add("menubtn");
-        layout1.setConstraints(startButton, 0, 1);
+        GridPane.setConstraints(startButton, 0, 1);
+        GridPane.setHalignment(startButton, HPos.CENTER);
+        GridPane.setValignment(startButton, VPos.CENTER);
 
         Button exitButton = new Button("Exit Program");
         exitButton.getStyleClass().add("menubtn");
-        layout1.setConstraints(exitButton, 0, 2);
+        GridPane.setConstraints(exitButton, 0, 2);
+        GridPane.setHalignment(exitButton, HPos.CENTER);
+        GridPane.setValignment(exitButton, VPos.CENTER);
 
-
-        // Horizontal and Vertical Alignment of items
-        layout1.setHalignment(mainTitle, HPos.CENTER);
-        layout1.setHalignment(startButton, HPos.CENTER);
-        layout1.setHalignment(exitButton, HPos.CENTER);
-
-        layout1.setValignment(mainTitle, VPos.CENTER);
-        layout1.setValignment(startButton, VPos.CENTER);
-        layout1.setValignment(exitButton, VPos.CENTER);
 
         layout1.getChildren().addAll(mainTitle, startButton, exitButton);
 
         Scene startScene = new Scene(layout1, width, height);
         startScene.getStylesheets().add(css);
+
+
+
         // **********************
         // Instructions Screen
         // **********************
         GridPane layout2 = new GridPane();
-        layout2.setPadding(new Insets(10, 10, 50, 10));
+        layout2.setPadding(new Insets(10, 20, 50, 20));
         layout2.setVgap(10);
-        layout2.setHgap(100);
+        layout2.setHgap(30);
+        layout2.getRowConstraints().add(rowConstraints);
+        layout2.getColumnConstraints().add(columnConstraints);
+
+        Label instructTitle = new Label();
+        instructTitle.getStyleClass().add("instructions-title");
+        instructTitle.setText("Instructions");
+        instructTitle.setWrapText(true);
+        instructTitle.setTextAlignment(TextAlignment.CENTER);
+        GridPane.setConstraints(instructTitle, 0, 0);
+        GridPane.setHalignment(instructTitle, HPos.CENTER);
+        GridPane.setValignment(instructTitle, VPos.CENTER);
 
         Label instruct = new Label();
         instruct.getStyleClass().add("instructions");
-        instruct.setText("Lorem ipsum dolor si amet. The test will begin as soon as you click the circle below");
-        layout2.setConstraints(instruct, 0, 0);
+        instruct.setText("Click the circle each time it moves to a new position as quickly and accurately as you can. " +
+                "You can set the number of iterations in the spinner. The recommended default is 10 times. " +
+                "The test will begin as soon as you click the circle below");
+        instruct.setWrapText(true);
+        instruct.setTextAlignment(TextAlignment.CENTER);
+        GridPane.setConstraints(instruct, 0, 1);
+        GridPane.setHalignment(instruct, HPos.CENTER);
+        GridPane.setValignment(instruct, VPos.CENTER);
 
         Spinner<Integer> spinner = new Spinner(5, 30, 10);
-        layout2.setConstraints(spinner, 0, 1);
+        GridPane.setConstraints(spinner, 0, 2);
+        GridPane.setHalignment(spinner, HPos.CENTER);
+        GridPane.setValignment(spinner, VPos.CENTER);
 
         Color blue = Color.web("#2196F3");
         final Circle startCircle = new Circle(radius, blue);
+        GridPane.setConstraints(startCircle, 0, 3);
+        GridPane.setHalignment(startCircle, HPos.CENTER);
+        GridPane.setValignment(startCircle, VPos.CENTER);
 
-        layout2.getChildren().addAll(instruct, spinner, startCircle);
+        layout2.getChildren().addAll(instructTitle, instruct, spinner, startCircle);
         Scene instructScene = new Scene(layout2, width, height);
         instructScene.getStylesheets().add(css);
 
         // **********************
         // Experiment Screen
         // **********************
-        int iterations = spinner.getValue();
+
         final Circle expCircle = new Circle(radius, blue);
         double circleStartX = getRandom(width-(radius+20)); //min radius+20 max width-100
         double circleStartY = getRandom(height-(radius+20)); //min radius+20 max height-100
         expCircle.setCenterX(circleStartX);
         expCircle.setCenterY(circleStartY);
 
-        double[] xval = {200.0f, 300.0f, 400.0f};
-        double[] yval = {200.0f, 300.0f, 400.0f};
+        double[] xval = {100.0f, 500.0f, 700.0f};
+        double[] yval = {200.0f, 200.0f, 200.0f};
 
 
         Pane layout3 = new Pane();
@@ -142,7 +169,7 @@ public class Main extends Application {
 
         startButton.setOnAction(e -> {
             primaryStage.setScene(instructScene);
-            startTime = System.currentTimeMillis();
+
         });
 
         exitButton.setOnAction(e -> primaryStage.close());
@@ -151,36 +178,45 @@ public class Main extends Application {
             startXPos = startCircle.getCenterX();
             startYPos = startCircle.getCenterY();
             primaryStage.setScene(expScene);
+            startTime = System.currentTimeMillis();
+            iterations = spinner.getValue();
         });
 //        circle.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
 //
 //        });
 
 
-        primaryStage.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+        expScene.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             double x = e.getSceneX();
             double y = e.getSceneY();
             double cx = expCircle.getCenterX();
             double cy = expCircle.getCenterY();
             double distanceSquared = (x - cx) * (x - cx) + (y - cy) * (y - cy);
-            if (primaryStage.getScene().equals(expScene)) {
-                if (distanceSquared <= radius*radius) {
-                    endTime = System.currentTimeMillis();
-                    time.add((endTime - startTime)/1000);
-                    count++;
-                    if (count < xval.length) {
-                        expCircle.setCenterY(getRandom(height-(radius-20)));
-                        expCircle.setCenterX(getRandom(width-(radius-20)));
 
-                    } else {
-                        time.forEach(num -> System.out.println(num));
-                        primaryStage.setScene(graphScene);
-                    }
-
+            if (distanceSquared <= radius*radius) {
+                endTime = System.currentTimeMillis();
+                double time = (endTime - startTime)/1000;
+                times.add(time);
+                double dist = Math.sqrt(Math.pow(Math.abs(cx - startXPos), 2) + Math.pow(Math.abs(cy - startYPos), 2));
+                dists.add(dist);
+                count++;
+                if (count < iterations) {
+                    expCircle.setCenterY(getRandom(height-(radius+20)));
+                    expCircle.setCenterX(getRandom(width-(radius+20)));
+                    startXPos = x;
+                    startYPos = y;
+                    startTime = System.currentTimeMillis();
                 } else {
-                    System.out.println("mouse click outside " + e.getSceneX());
+                    times.forEach(num -> System.out.println(num));
+                    dists.forEach(num -> System.out.println(num));
+                    primaryStage.setScene(graphScene);
+                    buildGraph(times, dists);
                 }
+
+            } else {
+                System.out.println("mouse click outside " + e.getSceneX());
             }
+
         });
         primaryStage.setTitle("Fitt's Law Experiment");
         primaryStage.setScene(startScene);
@@ -196,5 +232,29 @@ public class Main extends Application {
     private static double getRandom(double max) {
         Random r = new Random();
         return (radius+20) + (max - (radius+20)) * r.nextDouble();
+    }
+
+    private static void buildGraph(ArrayList<Double> times, ArrayList<Double> dists) {
+        double[] moveArr = new double[times.size()];
+        double[] diffArr = new double[dists.size()];
+
+        for(int i = 0; i < times.size(); i++) {
+            moveArr[i] = times.get(i).doubleValue();
+            diffArr[i] = Math.log((dists.get(i).doubleValue()/(radius/2)) + 1);
+        }
+
+        double maxDiff = getMax(diffArr);
+        double maxMove = getMax(moveArr);
+
+        NumberAxis xAxis = new NumberAxis(0, diffArr[diffArr.length - 1], maxDiff/10);
+    }
+
+    private static double getMax(double[] arr) {
+        double max = 0;
+        for(int i = 0; i < arr.length; i++) {
+            if(arr[i] > max)
+                max = arr[i];
+        }
+        return max;
     }
 }
