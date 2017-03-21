@@ -9,6 +9,7 @@ import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -16,18 +17,23 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Main extends Application {
-    final int width = 1000;
-    final int height = 600;
-    final double radius = 80.0f;
+    final static int width = 1000;
+    final static int height = 800;
+    final static double radius = 80.0f;
+
     int count = 0;
-    final ObjectProperty<Circle> selectedCircle = new SimpleObjectProperty<>();
-    final ObjectProperty<Point2D> selectedLocation = new SimpleObjectProperty<>();
+
     String css = this.getClass().getResource("/sample/styles.css").toExternalForm();
+
     ArrayList<Double> time = new ArrayList();
+
     double startTime;
     double endTime;
+    double startXPos;
+    double startYPos;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -77,22 +83,46 @@ public class Main extends Application {
         Scene startScene = new Scene(layout1, width, height);
         startScene.getStylesheets().add(css);
         // **********************
+        // Instructions Screen
+        // **********************
+        GridPane layout2 = new GridPane();
+        layout2.setPadding(new Insets(10, 10, 50, 10));
+        layout2.setVgap(10);
+        layout2.setHgap(100);
+
+        Label instruct = new Label();
+        instruct.getStyleClass().add("instructions");
+        instruct.setText("Lorem ipsum dolor si amet. The test will begin as soon as you click the circle below");
+        layout2.setConstraints(instruct, 0, 0);
+
+        Spinner<Integer> spinner = new Spinner(5, 30, 10);
+        layout2.setConstraints(spinner, 0, 1);
+
+        Color blue = Color.web("#2196F3");
+        final Circle startCircle = new Circle(radius, blue);
+
+        layout2.getChildren().addAll(instruct, spinner, startCircle);
+        Scene instructScene = new Scene(layout2, width, height);
+        instructScene.getStylesheets().add(css);
+
+        // **********************
         // Experiment Screen
         // **********************
-        Color blue = Color.web("#2196F3");
-        final Circle circle = new Circle(radius, blue);
-        double startx = 100.0f;
-        double starty = 100.0f;
-        circle.setCenterX(startx);
-        circle.setCenterY(starty);
+        int iterations = spinner.getValue();
+        final Circle expCircle = new Circle(radius, blue);
+        double circleStartX = getRandom(width-(radius+20)); //min radius+20 max width-100
+        double circleStartY = getRandom(height-(radius+20)); //min radius+20 max height-100
+        expCircle.setCenterX(circleStartX);
+        expCircle.setCenterY(circleStartY);
 
         double[] xval = {200.0f, 300.0f, 400.0f};
         double[] yval = {200.0f, 300.0f, 400.0f};
 
-        Pane layout2 = new Pane();
-        layout2.getChildren().add(circle);
 
-        Scene expScene = new Scene(layout2, width, height);
+        Pane layout3 = new Pane();
+        layout3.getChildren().add(expCircle);
+
+        Scene expScene = new Scene(layout3, width, height);
 
         // **********************
         // End Graph Screen
@@ -100,10 +130,10 @@ public class Main extends Application {
 
 
 
-        StackPane layout3 = new StackPane();
-        //layout3.getChildren().add();
+        StackPane layout4 = new StackPane();
+        //layout4.getChildren().add();
 
-        Scene graphScene = new Scene(layout3, width, height);
+        Scene graphScene = new Scene(layout4, width, height);
 
 
         // **********************
@@ -111,11 +141,17 @@ public class Main extends Application {
         // **********************
 
         startButton.setOnAction(e -> {
-            primaryStage.setScene(expScene);
+            primaryStage.setScene(instructScene);
             startTime = System.currentTimeMillis();
         });
+
         exitButton.setOnAction(e -> primaryStage.close());
 
+        startCircle.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            startXPos = startCircle.getCenterX();
+            startYPos = startCircle.getCenterY();
+            primaryStage.setScene(expScene);
+        });
 //        circle.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
 //
 //        });
@@ -124,18 +160,20 @@ public class Main extends Application {
         primaryStage.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             double x = e.getSceneX();
             double y = e.getSceneY();
-            double cx = circle.getCenterX();
-            double cy = circle.getCenterY();
+            double cx = expCircle.getCenterX();
+            double cy = expCircle.getCenterY();
             double distanceSquared = (x - cx) * (x - cx) + (y - cy) * (y - cy);
             if (primaryStage.getScene().equals(expScene)) {
                 if (distanceSquared <= radius*radius) {
                     endTime = System.currentTimeMillis();
                     time.add((endTime - startTime)/1000);
+                    count++;
                     if (count < xval.length) {
-                        circle.setCenterY(yval[count]);
-                        circle.setCenterX(xval[count]);
-                        count++;
+                        expCircle.setCenterY(getRandom(height-(radius-20)));
+                        expCircle.setCenterX(getRandom(width-(radius-20)));
+
                     } else {
+                        time.forEach(num -> System.out.println(num));
                         primaryStage.setScene(graphScene);
                     }
 
@@ -152,5 +190,11 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+
+    }
+
+    private static double getRandom(double max) {
+        Random r = new Random();
+        return (radius+20) + (max - (radius+20)) * r.nextDouble();
     }
 }
