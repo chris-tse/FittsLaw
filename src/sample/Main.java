@@ -8,6 +8,8 @@ import javafx.event.EventHandler;
 import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -25,7 +27,7 @@ import java.util.Random;
 public class Main extends Application {
     final static int width = 1000;
     final static int height = 800;
-    final static double radius = 50.0f;
+    final static double radius = 30.0f;
 
     int iterations = 10;
     int count = 0;
@@ -195,7 +197,7 @@ public class Main extends Application {
 
             if (distanceSquared <= radius*radius) {
                 endTime = System.currentTimeMillis();
-                double time = (endTime - startTime)/1000;
+                double time = (endTime - startTime);
                 times.add(time);
                 double dist = Math.sqrt(Math.pow(Math.abs(cx - startXPos), 2) + Math.pow(Math.abs(cy - startYPos), 2));
                 dists.add(dist);
@@ -209,8 +211,7 @@ public class Main extends Application {
                 } else {
                     times.forEach(num -> System.out.println(num));
                     dists.forEach(num -> System.out.println(num));
-                    primaryStage.setScene(graphScene);
-                    buildGraph(times, dists);
+                    buildGraph(times, dists, (Stage) ((Scene) e.getSource()).getWindow());
                 }
 
             } else {
@@ -234,7 +235,7 @@ public class Main extends Application {
         return (radius+20) + (max - (radius+20)) * r.nextDouble();
     }
 
-    private static void buildGraph(ArrayList<Double> times, ArrayList<Double> dists) {
+    private static void buildGraph(ArrayList<Double> times, ArrayList<Double> dists, Stage stage) {
         double[] moveArr = new double[times.size()];
         double[] diffArr = new double[dists.size()];
 
@@ -246,7 +247,31 @@ public class Main extends Application {
         double maxDiff = getMax(diffArr);
         double maxMove = getMax(moveArr);
 
-        NumberAxis xAxis = new NumberAxis(0, diffArr[diffArr.length - 1], maxDiff/10);
+        double minDiff = getMin(diffArr);
+        double minMove = getMin(moveArr);
+
+        final NumberAxis xAxis = new NumberAxis(0, maxDiff, maxDiff/10);
+        final NumberAxis yAxis = new NumberAxis(0, 1000, maxMove/10);
+
+        final ScatterChart<Number, Number> sc = new ScatterChart<>(xAxis, yAxis);
+        xAxis.setLabel("Index of Difficulty");
+        yAxis.setLabel("Movement Time (ms)");
+
+        sc.setTitle("Fitt's Law Relation");
+
+        XYChart.Series series1 = new XYChart.Series();
+        series1.setName("Click Time vs Index of Difficulty");
+
+        for(int i = 0; i < diffArr.length; i++) {
+            series1.getData().add(new XYChart.Data(diffArr[i], moveArr[i]));
+        }
+
+        sc.getData().add(series1);
+
+        Scene graphScene  = new Scene(sc, width, height);
+
+        stage.setScene(graphScene);
+
     }
 
     private static double getMax(double[] arr) {
@@ -256,5 +281,14 @@ public class Main extends Application {
                 max = arr[i];
         }
         return max;
+    }
+
+    private static double getMin(double[] arr) {
+        double min = 0;
+        for(int i = 0; i < arr.length; i++) {
+            if(arr[i] < min)
+                min = arr[i];
+        }
+        return min;
     }
 }
