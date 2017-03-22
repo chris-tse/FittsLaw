@@ -18,3 +18,7 @@
 .instructions {
     -fx-font-size: 20px;
 }
+
+.success-text {
+    -fx-font-size: 50px;
+}

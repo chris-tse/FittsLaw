@@ -5,6 +5,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.EventHandler;
+import javafx.fxml.FXML;
 import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
@@ -25,12 +26,14 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Main extends Application {
+
     final static int width = 1000;
     final static int height = 800;
     final static double radius = 30.0f;
 
     int iterations = 10;
     int count = 0;
+    static int misses = 0;
 
     String css = this.getClass().getResource("/sample/styles.css").toExternalForm();
 
@@ -47,6 +50,8 @@ public class Main extends Application {
         // **********************
         // Start Screen
         // **********************
+
+
         GridPane layout1 = new GridPane();
         layout1.setPadding(new Insets(10, 10, 50, 10));
         layout1.setVgap(10);
@@ -119,7 +124,7 @@ public class Main extends Application {
         GridPane.setHalignment(instruct, HPos.CENTER);
         GridPane.setValignment(instruct, VPos.CENTER);
 
-        Spinner<Integer> spinner = new Spinner(5, 30, 10);
+        Spinner<Integer> spinner = new Spinner(1, 30, 10);
         GridPane.setConstraints(spinner, 0, 2);
         GridPane.setHalignment(spinner, HPos.CENTER);
         GridPane.setValignment(spinner, VPos.CENTER);
@@ -211,11 +216,12 @@ public class Main extends Application {
                 } else {
                     times.forEach(num -> System.out.println(num));
                     dists.forEach(num -> System.out.println(num));
-                    buildGraph(times, dists, (Stage) ((Scene) e.getSource()).getWindow());
+                    buildGraph(times, dists, (Stage) ((Scene) e.getSource()).getWindow(), css);
                 }
 
             } else {
                 System.out.println("mouse click outside " + e.getSceneX());
+                misses++;
             }
 
         });
@@ -235,7 +241,31 @@ public class Main extends Application {
         return (radius+20) + (max - (radius+20)) * r.nextDouble();
     }
 
-    private static void buildGraph(ArrayList<Double> times, ArrayList<Double> dists, Stage stage) {
+    private static void buildGraph(ArrayList<Double> times, ArrayList<Double> dists, Stage stage, String css) {
+        GridPane graphPane = new GridPane();
+
+        ColumnConstraints columnConstraints = new ColumnConstraints();
+        columnConstraints.setFillWidth(true);
+        columnConstraints.setHgrow(Priority.ALWAYS);
+
+        RowConstraints rowConstraints = new RowConstraints();
+        rowConstraints.setFillHeight(true);
+        rowConstraints.setVgrow(Priority.ALWAYS);
+        
+        graphPane.getColumnConstraints().add(columnConstraints);
+        graphPane.getRowConstraints().add(rowConstraints);
+        System.out.println(times.size());
+        System.out.println(misses);
+        double rate = ((double) times.size() - misses) / times.size();
+        System.out.println(rate);
+        Label success = new Label();
+        success.setText("Success Rate: " + rate*100 + "%");
+        success.setTextAlignment(TextAlignment.CENTER);
+        success.getStyleClass().add("success-text");
+        GridPane.setConstraints(success, 0, 0);
+        GridPane.setHalignment(success, HPos.CENTER);
+        GridPane.setValignment(success, VPos.CENTER);
+
         double[] moveArr = new double[times.size()];
         double[] diffArr = new double[dists.size()];
 
@@ -254,6 +284,7 @@ public class Main extends Application {
         final NumberAxis yAxis = new NumberAxis(0, 1000, maxMove/10);
 
         final ScatterChart<Number, Number> sc = new ScatterChart<>(xAxis, yAxis);
+        GridPane.setConstraints(sc, 0, 1);
         xAxis.setLabel("Index of Difficulty");
         yAxis.setLabel("Movement Time (ms)");
 
@@ -267,8 +298,10 @@ public class Main extends Application {
         }
 
         sc.getData().add(series1);
+        graphPane.getChildren().addAll(success, sc);
+        graphPane.getStylesheets().add(css);
 
-        Scene graphScene  = new Scene(sc, width, height);
+        Scene graphScene  = new Scene(graphPane, width, height);
 
         stage.setScene(graphScene);
 
