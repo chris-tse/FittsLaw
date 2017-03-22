@@ -280,7 +280,7 @@ public class Main extends Application {
         double minDiff = getMin(diffArr);
         double minMove = getMin(moveArr);
 
-        final NumberAxis xAxis = new NumberAxis(0, maxDiff, maxDiff/10);
+        final NumberAxis xAxis = new NumberAxis(0, Math.ceil(maxDiff), maxDiff/10);
         final NumberAxis yAxis = new NumberAxis(0, 1000, maxMove/10);
 
         final ScatterChart<Number, Number> sc = new ScatterChart<>(xAxis, yAxis);
